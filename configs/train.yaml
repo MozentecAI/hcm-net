@@ -1,0 +1,81 @@
+seed: 42
+
+data:
+  labels_path: example_labels.csv
+  data_dir: hcmdata
+  num_folds: 5
+  fold: 0
+  num_frames: 72
+  image_size: 512
+  batch_size: 4
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  train_temporal_window: [0.75, 1.0]
+  resize_mode: letterbox
+  sampling_mode: cycle
+  cycle_num_cycles: 2
+  cycle_period_range: [16, 96]
+  cycle_curve_stride: 2
+  phase_bias_strength: 0.5
+  phase_candidate_multiplier: 2
+  temporal_stride_jitter: 0.25
+  frame_dropout_prob: 0.05
+  eval_num_clips: 1
+  eval_window_ratio: 0.75
+  eval_phase_bias_strength: 0.5
+  normalization:
+    mean: 0.12484750580592506
+    std: 0.2133400417810916
+  augmentation:
+    rotation_degrees: 7.0
+    brightness: 0.15
+    contrast: 0.15
+
+model:
+  backbone: resnet34
+  pretrained: true
+  input_channels: 1
+  attention_mode: soft
+  pooling_order: spatial_first
+  region_feature: fpn
+  region_channels: 256
+  temporal_attention: true
+  flat_heads: false
+  dropout: 0.2
+  prior_centers:
+    apex: 0.2
+    middle: 0.5
+    outflow: 0.8
+  prior_sigma: 0.18
+
+loss:
+  focal_gamma: 2.0
+  effective_number_beta: 0.999
+  coarse_weight: 1.0
+  fine_weight: 1.0
+  overall_fine_weight: 1.0
+  consistency_weight: 0.2
+
+optimizer:
+  learning_rate: 0.0001
+  backbone_learning_rate: 0.00003
+  weight_decay: 0.0001
+  warmup_epochs: 3
+
+trainer:
+  max_epochs: 50
+  accelerator: auto
+  devices: 1
+  strategy: auto
+  precision: 16-mixed
+  accumulate_grad_batches: 2
+  gradient_clip_val: 1.0
+  deterministic: false
+  benchmark: true
+  log_every_n_steps: 10
+  early_stopping_patience: 10
+  monitor: val/mean_coarse_auroc
+  ema_decay: 0.999
+  output_dir: outputs
+  experiment_name: hcm_resnet34_spatial_first_cycle
